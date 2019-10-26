@@ -25,7 +25,7 @@ type signalMessage struct {
 	signalValue os.Signal
 }
 
-func (p *signalMessage) msgType() string {
+func (msg signalMessage) msgType() string {
 	return "signal"
 }
 
@@ -33,7 +33,7 @@ type heartbeatMessage struct {
 	hbValue time.Time
 }
 
-func (p *heartbeatMessage) msgType() string {
+func (msg heartbeatMessage) msgType() string {
 	return "heartbeat"
 }
 
@@ -56,9 +56,12 @@ mainLoop:
 	for true {
 		select {
 		case message := <-responseChan:
-			_ = myLogger.Output(1, fmt.Sprint("Got response - ", message.msgType()))
-			if message.msgType() == "signal" {
+			switch message.msgType() {
+			case "signal":
 				break mainLoop
+			case "heartbeat":
+				hbMessage := message.(*heartbeatMessage)
+				_ = myLogger.Output(1, fmt.Sprint("Heartbeat ", hbMessage.hbValue))
 			}
 		}
 	}
